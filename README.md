@@ -73,15 +73,15 @@ Make sure you have a MySQL database with the following tables. All fields are re
 
 ```sql
 CREATE TABLE `patients` (
-	`mrn` int NOT NULL,
-	`fname` text NOT NULL,
 	`lname` text NOT NULL,
+	`fname` text NOT NULL,
 	`dob` date NOT NULL,
 	`address` text NOT NULL,
 	`state` text NOT NULL,
 	`city` text NOT NULL,
 	`zip` int NOT NULL,
 	`insurance` text NOT NULL,
+	`mrn` int NOT NULL,
 	PRIMARY KEY (`mrn`),
 	UNIQUE KEY `mrn_UNIQUE` (`mrn`)
 );
@@ -93,12 +93,16 @@ CREATE TABLE `patients` (
 CREATE TABLE `patient_history` (
 	`id` varchar(255) NOT NULL,
 	`patientID` int NOT NULL,
-	`procedureID` text NOT NULL,
+	`procedureID` varchar(255) NOT NULL,
 	`date` date NOT NULL,
 	`billing` double NOT NULL,
 	`doctor` text NOT NULL,
 	PRIMARY KEY (`id`),
-	UNIQUE KEY `id_UNIQUE` (`id`)
+	UNIQUE KEY `id_UNIQUE` (`id`),
+	KEY `patientID_idx` (`patientID`),
+	KEY `procedureID_idx` (`procedureID`),
+	CONSTRAINT `patientID` FOREIGN KEY (`patientID`) REFERENCES `patients` (`mrn`) ON DELETE CASCADE ON UPDATE CASCADE,
+	CONSTRAINT `procedureID` FOREIGN KEY (`procedureID`) REFERENCES `procedures` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 ```
 
