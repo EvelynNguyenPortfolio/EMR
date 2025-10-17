@@ -73,17 +73,18 @@ Make sure you have a MySQL database with the following tables. All fields are re
 
 ```sql
 CREATE TABLE `patients` (
-	`lname` text NOT NULL,
-	`fname` text NOT NULL,
-	`dob` date NOT NULL,
-	`address` text NOT NULL,
-	`state` text NOT NULL,
-	`city` text NOT NULL,
-	`zip` int NOT NULL,
-	`insurance` text NOT NULL,
-	`mrn` int NOT NULL,
-	PRIMARY KEY (`mrn`),
-	UNIQUE KEY `mrn_UNIQUE` (`mrn`)
+  `lname` text NOT NULL,
+  `fname` text NOT NULL,
+  `dob` text NOT NULL,
+  `address` text NOT NULL,
+  `state` text NOT NULL,
+  `city` text NOT NULL,
+  `zip` int NOT NULL,
+  `insurance` text NOT NULL,
+  `mrn` int NOT NULL,
+  `email` text NOT NULL,
+  PRIMARY KEY (`mrn`),
+  UNIQUE KEY `mrn_UNIQUE` (`mrn`)
 );
 ```
 
@@ -91,18 +92,20 @@ CREATE TABLE `patients` (
 
 ```sql
 CREATE TABLE `patient_history` (
-	`id` varchar(255) NOT NULL,
-	`patientID` int NOT NULL,
-	`procedureID` varchar(255) NOT NULL,
-	`date` date NOT NULL,
-	`billing` double NOT NULL,
-	`doctor` text NOT NULL,
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `id_UNIQUE` (`id`),
-	KEY `patientID_idx` (`patientID`),
-	KEY `procedureID_idx` (`procedureID`),
-	CONSTRAINT `patientID` FOREIGN KEY (`patientID`) REFERENCES `patients` (`mrn`) ON DELETE CASCADE ON UPDATE CASCADE,
-	CONSTRAINT `procedureID` FOREIGN KEY (`procedureID`) REFERENCES `procedures` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+  `id` varchar(25) NOT NULL,
+  `patientId` int NOT NULL,
+  `procedureId` varchar(25) NOT NULL,
+  `date` date NOT NULL,
+  `billing` double NOT NULL,
+  `doctorId` varchar(25) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `procedureId_idx` (`procedureId`),
+  KEY `doctorId_idx` (`doctorId`),
+  KEY `patientId_idx` (`patientId`),
+  CONSTRAINT `ph_to_doc_fk` FOREIGN KEY (`doctorId`) REFERENCES `doctors` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `ph_to_pat_fk` FOREIGN KEY (`patientId`) REFERENCES `patients` (`mrn`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `ph_to_proc_fk` FOREIGN KEY (`procedureId`) REFERENCES `procedures` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 );
 ```
 
@@ -110,10 +113,26 @@ CREATE TABLE `patient_history` (
 
 ```sql
 CREATE TABLE `procedures` (
-	`id` varchar(255) NOT NULL,
-	`name` text NOT NULL,
-	PRIMARY KEY (`id`),
-	UNIQUE KEY `Procedure ID_UNIQUE` (`id`)
+  `id` varchar(25) NOT NULL,
+  `name` text NOT NULL,
+  `description` text NOT NULL,
+  `duration` int NOT NULL,
+  `doctorId` varchar(25) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `doctorId_fk_idx` (`doctorId`),
+  CONSTRAINT `proc_to_doc_fk` FOREIGN KEY (`doctorId`) REFERENCES `doctors` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+);
+```
+
+### Doctors Table
+
+```sql
+CREATE TABLE `doctors` (
+  `id` varchar(25) NOT NULL,
+  `name` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
 );
 ```
 

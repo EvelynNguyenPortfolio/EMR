@@ -150,9 +150,10 @@ public class PatientsCLI extends CLI {
         String city = getRequiredStringInput("Enter City: ");
         int zip = getIntInput("Enter Zip Code: ");
         String insurance = getRequiredStringInput("Enter Insurance: ");
+        String email = getRequiredStringInput("Enter Email: ");
 
         // Create patient object with collected data
-        Patients patient = new Patients(mrn, fname, lname, dob, address, state, city, zip, insurance);
+        Patients patient = new Patients(mrn, fname, lname, dob, address, state, city, zip, insurance, email);
 
         // Attempt to save patient to database
         try {

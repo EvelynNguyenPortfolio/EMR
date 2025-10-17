@@ -154,9 +154,12 @@ public class ProceduresCLI extends CLI {
         // Collect procedure information with validation
         String id = getRequiredStringInput("Enter Procedure ID: ");
         String name = getRequiredStringInput("Enter Procedure Name: ");
+        String description = getRequiredStringInput("Enter Procedure Description: ");
+        int duration = getIntInput("Enter Procedure Duration (minutes): ");
+        String doctorId = getRequiredStringInput("Enter Doctor ID: ");
 
         // Create procedure object with collected data
-        Procedures procedure = new Procedures(id, name);
+        Procedures procedure = new Procedures(id, name, description, duration, doctorId);
 
         // Attempt to save procedure to database
         try {

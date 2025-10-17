@@ -20,21 +20,24 @@ import main.util.Database;
  * <li><b>Patient History</b> - Track medical procedures performed on
  * patients</li>
  * <li><b>Procedures</b> - Maintain catalog of available medical procedures</li>
+ * <li><b>Doctors</b> - Manage doctor information</li>
  * </ul>
  * 
  * <h3>Navigation Flow:</h3>
- * 
+ *
  * <pre>
  * Main Menu
  *  ├─ Patients Management (PatientsCLI)
  *  ├─ Patient History Management (PatientHistoryCLI)
  *  ├─ Procedures Management (ProceduresCLI)
+ *  ├─ Doctors Management (DoctorsCLI)
  *  └─ Exit
  * </pre>
  *
  * @see PatientsCLI
  * @see PatientHistoryCLI
  * @see ProceduresCLI
+ * @see DoctorsCLI
  */
 public class MainCLI extends CLI {
 
@@ -74,6 +77,7 @@ public class MainCLI extends CLI {
      * <li>Patients - Opens patient management interface</li>
      * <li>Patient History - Opens patient history management interface</li>
      * <li>Procedures - Opens procedures management interface</li>
+     * <li>Doctors - Opens doctors management interface</li>
      * <li>Exit - Closes the application</li>
      * </ol>
      * 
@@ -108,6 +112,10 @@ public class MainCLI extends CLI {
                     new ProceduresCLI(db).start();
                     break;
                 case 4:
+                    // Navigate to Doctors management
+                    new DoctorsCLI(db).start();
+                    break;
+                case 5:
                     // Exit application
                     running = false;
                     System.out.println(GOODBYE_MESSAGE);
@@ -131,7 +139,8 @@ public class MainCLI extends CLI {
         System.out.println("1. Patients");
         System.out.println("2. Patient History");
         System.out.println("3. Procedures");
-        System.out.println("4. Exit");
+        System.out.println("4. Doctors");
+        System.out.println("5. Exit");
         System.out.println("=============================");
     }
 }

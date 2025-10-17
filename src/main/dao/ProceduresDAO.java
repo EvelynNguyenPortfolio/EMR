@@ -31,7 +31,7 @@ public class ProceduresDAO {
     /**
      * Creates a new medical procedure record in the database.
      * This method inserts a new procedure definition into the procedures table
-     * with a unique ID and descriptive name.
+     * with all required information including description, duration, and doctor ID.
      *
      * @param procedure the Procedures object containing the procedure information
      *                  to be inserted
@@ -41,12 +41,15 @@ public class ProceduresDAO {
      */
     public boolean createProcedure(Procedures procedure) throws SQLException {
         // SQL INSERT statement for creating a new procedure record
-        String sql = "INSERT INTO procedures (id, name) VALUES (?, ?)";
+        String sql = "INSERT INTO procedures (id, name, description, duration, doctorId) VALUES (?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = db.getConnection().prepareStatement(sql)) {
             // Set parameters in the prepared statement to prevent SQL injection
             stmt.setString(1, procedure.getId());
             stmt.setString(2, procedure.getName());
+            stmt.setString(3, procedure.getDescription());
+            stmt.setInt(4, procedure.getDuration());
+            stmt.setString(5, procedure.getDoctorId());
 
             // Execute the insert and return success status
             return stmt.executeUpdate() > 0;

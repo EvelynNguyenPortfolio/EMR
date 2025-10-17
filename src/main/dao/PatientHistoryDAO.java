@@ -45,16 +45,16 @@ public class PatientHistoryDAO {
      */
     public boolean createPatientHistory(PatientHistory patientHistory) throws SQLException {
         // SQL INSERT statement for creating a new patient history record
-        String sql = "INSERT INTO patient_history (id, patientID, procedureID, date, billing, doctor) VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO patient_history (id, patientId, procedureId, date, billing, doctorId) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = db.getConnection().prepareStatement(sql)) {
             // Set parameters in the prepared statement to prevent SQL injection
             stmt.setString(1, patientHistory.getId());
-            stmt.setInt(2, patientHistory.getPatientID());
-            stmt.setString(3, patientHistory.getProcedureID());
+            stmt.setInt(2, patientHistory.getPatientId());
+            stmt.setString(3, patientHistory.getProcedureId());
             stmt.setDate(4, Date.valueOf(patientHistory.getDate()));
             stmt.setDouble(5, patientHistory.getBilling());
-            stmt.setString(6, patientHistory.getDoctor());
+            stmt.setString(6, patientHistory.getDoctorId());
 
             // Execute the insert and return success status
             return stmt.executeUpdate() > 0;

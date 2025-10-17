@@ -38,6 +38,9 @@ public class Patients {
     /** Patient's insurance provider information */
     private String insurance;
 
+    /** Patient's email address */
+    private String email;
+
     /**
      * Constructs a new Patients object with all required fields.
      *
@@ -50,9 +53,10 @@ public class Patients {
      * @param city      Patient's city
      * @param zip       Patient's zip code
      * @param insurance Patient's insurance information
+     * @param email     Patient's email address
      */
     public Patients(int mrn, String fname, String lname, LocalDate dob, String address, String state, String city,
-            int zip, String insurance) {
+            int zip, String insurance, String email) {
         this.mrn = mrn;
         this.fname = fname;
         this.lname = lname;
@@ -62,6 +66,7 @@ public class Patients {
         this.city = city;
         this.zip = zip;
         this.insurance = insurance;
+        this.email = email;
     }
 
     /**
@@ -234,6 +239,24 @@ public class Patients {
     }
 
     /**
+     * Gets the patient's email address.
+     *
+     * @return the email address
+     */
+    public String getEmail() {
+        return email;
+    }
+
+    /**
+     * Sets the patient's email address.
+     *
+     * @param email the email address to set
+     */
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    /**
      * Returns a string representation of the patient.
      * Includes all patient information in a readable format.
      *
@@ -242,7 +265,8 @@ public class Patients {
     @Override
     public String toString() {
         return "Patient MRN: " + mrn + ", Name: " + fname + " " + lname + ", DOB: " + dob + ", Address: " + address
-                + ", City: " + city + ", State: " + state + ", Zip: " + zip + ", Insurance: " + insurance;
+                + ", City: " + city + ", State: " + state + ", Zip: " + zip + ", Insurance: " + insurance + ", Email: "
+                + email;
     }
 
     /**

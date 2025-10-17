@@ -5,8 +5,8 @@ package main.models;
  * This model class encapsulates information about available medical procedures
  * that can be performed on patients.
  *
- * Each procedure is uniquely identified by its ID and contains a descriptive
- * name.
+ * Each procedure is uniquely identified by its ID and contains detailed
+ * information including description, duration, and the performing doctor.
  */
 public class Procedures {
 
@@ -16,15 +16,30 @@ public class Procedures {
     /** Descriptive name of the medical procedure */
     private String name;
 
+    /** Detailed description of the procedure */
+    private String description;
+
+    /** Duration of the procedure in minutes */
+    private int duration;
+
+    /** ID of the doctor who performs this procedure */
+    private String doctorId;
+
     /**
      * Constructs a new Procedures object with all required fields.
      *
-     * @param id   Unique identifier for the procedure
-     * @param name Descriptive name of the procedure
+     * @param id          Unique identifier for the procedure
+     * @param name        Descriptive name of the procedure
+     * @param description Detailed description of the procedure
+     * @param duration    Duration in minutes
+     * @param doctorId    ID of the performing doctor
      */
-    public Procedures(String id, String name) {
+    public Procedures(String id, String name, String description, int duration, String doctorId) {
         this.id = id;
         this.name = name;
+        this.description = description;
+        this.duration = duration;
+        this.doctorId = doctorId;
     }
 
     /**
@@ -71,14 +86,70 @@ public class Procedures {
     }
 
     /**
+     * Gets the detailed description of this procedure.
+     *
+     * @return the procedure description
+     */
+    public String getDescription() {
+        return description;
+    }
+
+    /**
+     * Sets the detailed description of this procedure.
+     *
+     * @param description the procedure description to set
+     */
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    /**
+     * Gets the duration of this procedure in minutes.
+     *
+     * @return the procedure duration
+     */
+    public int getDuration() {
+        return duration;
+    }
+
+    /**
+     * Sets the duration of this procedure in minutes.
+     *
+     * @param duration the procedure duration to set
+     */
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    /**
+     * Gets the ID of the doctor who performs this procedure.
+     *
+     * @return the doctor ID
+     */
+    public String getDoctorId() {
+        return doctorId;
+    }
+
+    /**
+     * Sets the ID of the doctor who performs this procedure.
+     *
+     * @param doctorId the doctor ID to set
+     */
+    public void setDoctorId(String doctorId) {
+        this.doctorId = doctorId;
+    }
+
+    /**
      * Returns a string representation of the procedure.
-     * Includes the procedure ID and name in a readable format.
+     * Includes the procedure ID, name, description, duration, and doctor ID in a
+     * readable format.
      *
      * @return formatted string containing procedure details
      */
     @Override
     public String toString() {
-        return "Procedure ID: " + id + ", Name: " + name;
+        return "Procedure ID: " + id + ", Name: " + name + ", Description: " + description +
+                ", Duration: " + duration + " minutes, Doctor ID: " + doctorId;
     }
 
     /**

@@ -42,7 +42,7 @@ public class PatientDAO {
      */
     public boolean createPatient(Patients patient) throws SQLException {
         // SQL INSERT statement for creating a new patient record
-        String sql = "INSERT INTO patients (mrn, fname, lname, dob, address, state, city, zip, insurance) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO patients (mrn, fname, lname, dob, address, state, city, zip, insurance, email) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stmt = db.getConnection().prepareStatement(sql)) {
             // Set parameters in the prepared statement to prevent SQL injection
@@ -55,6 +55,7 @@ public class PatientDAO {
             stmt.setString(7, patient.getCity());
             stmt.setInt(8, patient.getZip());
             stmt.setString(9, patient.getInsurance());
+            stmt.setString(10, patient.getEmail());
 
             // Execute the insert and return success status
             return stmt.executeUpdate() > 0;

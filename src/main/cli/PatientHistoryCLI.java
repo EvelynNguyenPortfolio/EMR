@@ -156,14 +156,14 @@ public class PatientHistoryCLI extends CLI {
 
         // Collect all required patient history information with validation
         String id = getRequiredStringInput("Enter History ID: ");
-        int patientID = getIntInput("Enter Patient ID: ");
-        String procedureID = getRequiredStringInput("Enter Procedure ID: ");
+        int patientId = getIntInput("Enter Patient ID: ");
+        String procedureId = getRequiredStringInput("Enter Procedure ID: ");
         LocalDate date = getDateInput("Enter Date (yyyy-MM-dd): ");
         double billing = getDoubleInput("Enter Billing Amount: ");
-        String doctor = getRequiredStringInput("Enter Doctor Name: ");
+        String doctorId = getRequiredStringInput("Enter Doctor ID: ");
 
         // Create patient history object with collected data
-        PatientHistory patientHistory = new PatientHistory(id, patientID, procedureID, date, billing, doctor);
+        PatientHistory patientHistory = new PatientHistory(id, patientId, procedureId, date, billing, doctorId);
 
         // Attempt to save patient history record to database
         try {

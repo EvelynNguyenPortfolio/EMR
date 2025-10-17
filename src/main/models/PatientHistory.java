@@ -18,10 +18,10 @@ public class PatientHistory {
     /**
      * ID of the patient this history record belongs to (references Patients.mrn)
      */
-    private int patientID;
+    private int patientId;
 
     /** ID of the procedure performed (references Procedures.id) */
-    private String procedureID;
+    private String procedureId;
 
     /** Date when the procedure was performed */
     private LocalDate date;
@@ -29,26 +29,27 @@ public class PatientHistory {
     /** Billing amount for the procedure in dollars */
     private double billing;
 
-    /** Name of the doctor who performed the procedure */
-    private String doctor;
+    /** ID of the doctor who performed the procedure */
+    private String doctorId;
 
     /**
      * Constructs a new PatientHistory object with all required fields.
      *
      * @param id          Unique identifier for the history record
-     * @param patientID   ID of the patient (must match an existing patient MRN)
-     * @param procedureID ID of the procedure performed
+     * @param patientId   ID of the patient (must match an existing patient MRN)
+     * @param procedureId ID of the procedure performed
      * @param date        Date when the procedure was performed
      * @param billing     Billing amount for the procedure
-     * @param doctor      Name of the attending doctor
+     * @param doctorId    ID of the attending doctor
      */
-    public PatientHistory(String id, int patientID, String procedureID, LocalDate date, double billing, String doctor) {
+    public PatientHistory(String id, int patientId, String procedureId, LocalDate date, double billing,
+            String doctorId) {
         this.id = id;
-        this.patientID = patientID;
-        this.procedureID = procedureID;
+        this.patientId = patientId;
+        this.procedureId = procedureId;
         this.date = date;
         this.billing = billing;
-        this.doctor = doctor;
+        this.doctorId = doctorId;
     }
 
     /**
@@ -81,17 +82,17 @@ public class PatientHistory {
      *
      * @return the patient ID
      */
-    public int getPatientID() {
-        return patientID;
+    public int getPatientId() {
+        return patientId;
     }
 
     /**
      * Sets the patient ID this history record belongs to.
      *
-     * @param patientID the patient ID to set
+     * @param patientId the patient ID to set
      */
-    public void setPatientID(int patientID) {
-        this.patientID = patientID;
+    public void setPatientId(int patientId) {
+        this.patientId = patientId;
     }
 
     /**
@@ -99,17 +100,17 @@ public class PatientHistory {
      *
      * @return the procedure ID
      */
-    public String getProcedureID() {
-        return procedureID;
+    public String getProcedureId() {
+        return procedureId;
     }
 
     /**
      * Sets the procedure ID for the medical procedure performed.
      *
-     * @param procedureID the procedure ID to set
+     * @param procedureId the procedure ID to set
      */
-    public void setProcedureID(String procedureID) {
-        this.procedureID = procedureID;
+    public void setProcedureId(String procedureId) {
+        this.procedureId = procedureId;
     }
 
     /**
@@ -149,21 +150,21 @@ public class PatientHistory {
     }
 
     /**
-     * Gets the name of the doctor who performed the procedure.
+     * Gets the ID of the doctor who performed the procedure.
      *
-     * @return the doctor's name
+     * @return the doctor's ID
      */
-    public String getDoctor() {
-        return doctor;
+    public String getDoctorId() {
+        return doctorId;
     }
 
     /**
-     * Sets the name of the doctor who performed the procedure.
+     * Sets the ID of the doctor who performed the procedure.
      *
-     * @param doctor the doctor's name to set
+     * @param doctorId the doctor's ID to set
      */
-    public void setDoctor(String doctor) {
-        this.doctor = doctor;
+    public void setDoctorId(String doctorId) {
+        this.doctorId = doctorId;
     }
 
     /**
@@ -174,8 +175,8 @@ public class PatientHistory {
      */
     @Override
     public String toString() {
-        return "PatientHistory ID: " + id + ", Patient ID: " + patientID + ", Procedure ID: " + procedureID +
-                ", Date: " + date + ", Billing: $" + billing + ", Doctor: " + doctor;
+        return "PatientHistory ID: " + id + ", Patient ID: " + patientId + ", Procedure ID: " + procedureId +
+                ", Date: " + date + ", Billing: $" + billing + ", Doctor ID: " + doctorId;
     }
 
     /**
