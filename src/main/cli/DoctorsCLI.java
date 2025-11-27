@@ -1,20 +1,37 @@
 package main.cli;
 
-import java.sql.SQLException;
 import java.util.List;
 import main.dao.DoctorDAO;
-import main.models.Doctors;
+import main.exception.DatabaseException;
+import main.model.Doctor;
 import main.util.Database;
 
+/**
+ * CLI handler for Doctor entity management.
+ * <p>
+ * This class provides a command-line interface for performing CRUD operations
+ * on Doctor records in the EMR system.
+ * </p>
+ *
+ */
 public class DoctorsCLI extends CLI {
 
     private final DoctorDAO doctorDAO;
 
+    /**
+     * Constructs a new DoctorsCLI with the specified database connection.
+     *
+     * @param db the database connection to use
+     */
     public DoctorsCLI(Database db) {
         super();
         this.doctorDAO = new DoctorDAO(db);
     }
 
+    /**
+     * Starts the Doctor management CLI interface.
+     */
+    @Override
     public void start() {
         boolean running = true;
         while (running) {
@@ -43,11 +60,14 @@ public class DoctorsCLI extends CLI {
                     System.out.println("Returning to main menu");
                     break;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    showError("Invalid choice. Please try again.");
             }
         }
     }
 
+    /**
+     * Displays the Doctor management menu.
+     */
     private void showMenu() {
         System.out.println("Doctor Management");
         System.out.println();
@@ -59,171 +79,217 @@ public class DoctorsCLI extends CLI {
         System.out.println("6. Back to Main Menu");
     }
 
+    /**
+     * Handles the creation of a new doctor.
+     */
     private void createDoctor() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Create New Doctor");
 
+        // Prompt user for doctor ID
         String id = getRequiredStringInput("Enter Doctor ID: ");
+
+        // Validate ID length
+        if (id.length() > 25) {
+            showError("Doctor ID cannot exceed 25 characters");
+            System.out.println();
+            return;
+        }
+
+        // Prompt user for doctor name
         String name = getRequiredStringInput("Enter Doctor Name: ");
 
-        Doctors doctor = new Doctors(id, name);
+        // Validate name length
+        if (name.length() > 45) {
+            showError("Doctor name cannot exceed 45 characters");
+            System.out.println();
+            return;
+        }
+
+        // Create a new Doctor object with the provided ID and name
+        Doctor doctor = new Doctor(id, name);
 
         try {
             System.out.println();
-            if (doctorDAO.createDoctor(doctor)) {
-                System.out.println("[OK] Doctor created successfully");
-            } else {
-                System.out.println("[ERROR] Failed to create doctor");
+            // Check if a doctor with this ID already exists to prevent duplicates
+            if (doctorDAO.exists(id)) {
+                showError("A doctor with ID '" + id + "' already exists");
+                System.out.println();
+                return;
             }
-        } catch (Exception e) {
-            System.out.println(
-                "[ERROR] Error creating doctor: " + e.getMessage()
-            );
+
+            // Attempt to create the doctor in the database
+            if (doctorDAO.create(doctor)) {
+                showSuccess("Doctor created successfully");
+            } else {
+                showError("Failed to create doctor");
+            }
+        } catch (DatabaseException e) {
+            showError("Error creating doctor: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles reading a single doctor by ID.
+     */
     private void readDoctor() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Read Doctor");
 
+        // Prompt user for doctor ID
         String id = getRequiredStringInput("Enter Doctor ID: ");
 
+        // Attempt to read the doctor from the database
         try {
             System.out.println();
-            Doctors doctor = doctorDAO.readDoctor(id);
+            Doctor doctor = doctorDAO.read(id);
             if (doctor != null) {
-                System.out.println("ID: " + doctor.getId());
-                System.out.println("Name: " + doctor.getName());
+                displayDoctor(doctor);
             } else {
-                System.out.println(
-                    "[NOT FOUND] Doctor with ID " + id + " not found"
-                );
+                showNotFound("Doctor", id);
             }
-        } catch (Exception e) {
-            System.out.println(
-                "[ERROR] Error reading doctor: " + e.getMessage()
-            );
+        } catch (DatabaseException e) {
+            showError("Error reading doctor: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles reading all doctors from the database.
+     */
     private void readAllDoctors() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Read All Doctors");
 
         try {
             System.out.println();
-            List<Doctors> doctors = doctorDAO.readAllDoctors();
+            List<Doctor> doctors = doctorDAO.readAll();
             if (!doctors.isEmpty()) {
                 int count = 1;
-                for (Doctors d : doctors) {
+                for (Doctor d : doctors) {
                     System.out.println("Doctor " + count + ":");
-                    System.out.println("ID: " + d.getId());
-                    System.out.println("Name: " + d.getName());
+                    displayDoctor(d);
                     System.out.println();
                     count++;
                 }
             } else {
-                System.out.println("[EMPTY] No doctors found");
+                showEmpty("No doctors found");
             }
-        } catch (Exception e) {
-            System.out.println(
-                "[ERROR] Error reading all doctors: " + e.getMessage()
-            );
+        } catch (DatabaseException e) {
+            showError("Error reading all doctors: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles updating an existing doctor.
+     */
     private void updateDoctor() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Update Doctor");
 
         String id = getRequiredStringInput("Enter Doctor ID: ");
-        if (!id.startsWith("DR")) {
-            System.out.println("Invalid ID");
-            return;
-        }
 
-        Doctors doctor;
+        Doctor doctor;
         try {
-            doctor = doctorDAO.readDoctor(id);
-        } catch (SQLException e) {
-            System.out.println("Error fetching records: " + e.getMessage());
+            doctor = doctorDAO.read(id);
+        } catch (DatabaseException e) {
+            showError("Error fetching records: " + e.getMessage());
+            System.out.println();
             return;
         }
 
         if (doctor == null) {
-            System.out.println("Doctor not found");
+            showNotFound("Doctor", id);
+            System.out.println();
             return;
         }
 
-        String updatedDoctor = getRequiredStringInput(
-            "Enter new doctor name: "
-        );
-        doctor.setName(updatedDoctor);
+        System.out.println();
+        showInfo("Current doctor name: " + doctor.getName());
+
+        String updatedName = getRequiredStringInput("Enter new doctor name: ");
+
+        // Validate name length
+        if (updatedName.length() > 45) {
+            showError("Doctor name cannot exceed 45 characters");
+            System.out.println();
+            return;
+        }
+
+        doctor.setName(updatedName);
 
         try {
             System.out.println();
-            boolean update = doctorDAO.updateDoctor(doctor);
+            boolean update = doctorDAO.update(doctor);
             if (update) {
-                System.out.println("[OK] Doctor information has been updated");
+                showSuccess("Doctor information has been updated");
             } else {
-                System.out.println("[ERROR] Update failed");
+                showError("Update failed");
             }
-        } catch (SQLException e) {
-            System.out.println(
-                "[ERROR] Error updating doctor: " + e.getMessage()
-            );
+        } catch (DatabaseException e) {
+            showError("Error updating doctor: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles deleting a doctor.
+     */
     private void deleteDoctor() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Delete Doctor");
 
         String id = getRequiredStringInput("Enter Doctor ID: ");
-        Doctors doctor;
+        Doctor doctor;
         try {
-            doctor = doctorDAO.readDoctor(id);
-        } catch (SQLException e) {
-            System.out.println(
-                "[ERROR] Error fetching doctor: " + e.getMessage()
-            );
+            doctor = doctorDAO.read(id);
+        } catch (DatabaseException e) {
+            showError("Error fetching doctor: " + e.getMessage());
             System.out.println();
             return;
         }
 
         if (doctor == null) {
-            System.out.println("[NOT FOUND] Doctor not found");
+            showNotFound("Doctor", id);
             System.out.println();
             return;
         }
 
         System.out.println();
-        System.out.println("[INFO] Doctor details:");
+        showInfo("Doctor details:");
         System.out.println(doctor.toString());
-        String confirm = getStringInput(
-            "[WARN] Are you sure you want to delete this doctor? (y/n): "
-        );
-        if (confirm.equalsIgnoreCase("y")) {
+
+        if (
+            getConfirmation(
+                "[WARN] Are you sure you want to delete this doctor? (y/n): "
+            )
+        ) {
             try {
                 System.out.println();
-                boolean deleted = doctorDAO.deleteDoctor(id);
+                boolean deleted = doctorDAO.delete(id);
                 if (deleted) {
-                    System.out.println("[OK] Doctor deleted successfully");
+                    showSuccess("Doctor deleted successfully");
                 } else {
-                    System.out.println("[ERROR] Failed to delete doctor");
+                    showError("Failed to delete doctor");
                 }
-            } catch (SQLException e) {
-                System.out.println(
-                    "[ERROR] Error deleting doctor: " + e.getMessage()
-                );
+            } catch (DatabaseException e) {
+                showError("Error deleting doctor: " + e.getMessage());
             }
         } else {
-            System.out.println("[CANCELLED] Deletion cancelled");
+            showCancelled("Deletion cancelled");
         }
         System.out.println();
+    }
+
+    /**
+     * Displays a doctor's information in a formatted way.
+     *
+     * @param doctor the doctor to display
+     */
+    private void displayDoctor(Doctor doctor) {
+        System.out.println("ID: " + doctor.getId());
+        System.out.println("Name: " + doctor.getName());
     }
 }

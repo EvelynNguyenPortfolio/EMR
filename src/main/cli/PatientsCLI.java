@@ -1,21 +1,38 @@
 package main.cli;
 
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
 import main.dao.PatientDAO;
-import main.models.Patients;
+import main.exception.DatabaseException;
+import main.model.Patient;
 import main.util.Database;
 
+/**
+ * CLI handler for Patient entity management.
+ * <p>
+ * This class provides a command-line interface for performing CRUD operations
+ * on Patient records in the EMR system.
+ * </p>
+ *
+ */
 public class PatientsCLI extends CLI {
 
     private final PatientDAO patientDAO;
 
+    /**
+     * Constructs a new PatientsCLI with the specified database connection.
+     *
+     * @param db the database connection to use
+     */
     public PatientsCLI(Database db) {
         super();
         this.patientDAO = new PatientDAO(db);
     }
 
+    /**
+     * Starts the Patient management CLI interface.
+     */
+    @Override
     public void start() {
         boolean running = true;
         while (running) {
@@ -25,30 +42,40 @@ public class PatientsCLI extends CLI {
 
             switch (choice) {
                 case 1:
+                    // Create a new patient
                     createPatient();
                     break;
                 case 2:
+                    // Read a patient by MRN
                     readPatient();
                     break;
                 case 3:
+                    // Read all patients
                     readAllPatients();
                     break;
                 case 4:
+                    // Update an existing patient
                     updatePatient();
                     break;
                 case 5:
+                    // Delete a patient
                     deletePatient();
                     break;
                 case 6:
+                    // Return to main menu
                     running = false;
                     System.out.println("Returning to main menu");
                     break;
                 default:
-                    System.out.println("Invalid choice. Please try again.");
+                    // Handle invalid menu choice
+                    showError("Invalid choice. Please try again.");
             }
         }
     }
 
+    /**
+     * Displays the Patient management menu.
+     */
     private void showMenu() {
         System.out.println("Patient Management");
         System.out.println();
@@ -60,22 +87,80 @@ public class PatientsCLI extends CLI {
         System.out.println("6. Back to Main Menu");
     }
 
+    /**
+     * Handles the creation of a new patient.
+     */
     private void createPatient() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Create New Patient");
 
+        // Prompt user for patient MRN
         int mrn = getIntInput("Enter MRN: ");
+
+        // Validate that MRN is a positive number
+        if (mrn <= 0) {
+            showError("MRN must be a positive number");
+            System.out.println();
+            return;
+        }
+
+        // Check if a patient with this MRN already exists to prevent duplicates
+        try {
+            if (patientDAO.exists(mrn)) {
+                showError("A patient with MRN '" + mrn + "' already exists");
+                System.out.println();
+                return;
+            }
+        } catch (DatabaseException e) {
+            showError("Error checking MRN: " + e.getMessage());
+            System.out.println();
+            return;
+        }
+
+        // Prompt user for patient's first name
         String fname = getRequiredStringInput("Enter First Name: ");
+        // Prompt user for patient's last name
         String lname = getRequiredStringInput("Enter Last Name: ");
+        // Prompt user for patient's date of birth
         LocalDate dob = getDateInput("Enter Date of Birth (yyyy-MM-dd): ");
+
+        // Validate that date of birth is not in the future
+        if (dob.isAfter(LocalDate.now())) {
+            showError("Date of birth cannot be in the future");
+            System.out.println();
+            return;
+        }
+
+        // Prompt user for patient's address
         String address = getRequiredStringInput("Enter Address: ");
+        // Prompt user for patient's state
         String state = getRequiredStringInput("Enter State: ");
+        // Prompt user for patient's city
         String city = getRequiredStringInput("Enter City: ");
+
+        // Prompt user for patient's zip code
         int zip = getIntInput("Enter Zip Code: ");
+        // Validate that zip code is a valid 5-digit number
+        if (zip <= 0 || zip > 99999) {
+            showError("Zip code must be a valid 5-digit number");
+            System.out.println();
+            return;
+        }
+
+        // Prompt user for patient's insurance provider
         String insurance = getRequiredStringInput("Enter Insurance: ");
+        // Prompt user for patient's email address
         String email = getRequiredStringInput("Enter Email: ");
 
-        Patients patient = new Patients(
+        // Perform basic email format validation
+        if (!email.contains("@") || !email.contains(".")) {
+            showError("Invalid email format");
+            System.out.println();
+            return;
+        }
+
+        // Create a new Patient object with all collected data
+        Patient patient = new Patient(
             mrn,
             fname,
             lname,
@@ -90,232 +175,274 @@ public class PatientsCLI extends CLI {
 
         try {
             System.out.println();
-            if (patientDAO.createPatient(patient)) {
-                System.out.println("[OK] Patient created successfully");
+            // Attempt to create the patient in the database
+            if (patientDAO.create(patient)) {
+                showSuccess("Patient created successfully");
             } else {
-                System.out.println("[ERROR] Failed to create patient");
+                showError("Failed to create patient");
             }
-        } catch (Exception e) {
-            System.out.println(
-                "[ERROR] Error creating patient: " + e.getMessage()
-            );
+        } catch (DatabaseException e) {
+            showError("Error creating patient: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles reading a single patient by MRN.
+     */
     private void readPatient() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Read Patient");
 
-        int id = getIntInput("Enter MRN: ");
+        // Prompt user for patient MRN
+        int mrn = getIntInput("Enter MRN: ");
 
         try {
             System.out.println();
-            Patients patient = patientDAO.readPatient(id);
+            // Attempt to read the patient from the database
+            Patient patient = patientDAO.read(mrn);
+            // Check if patient was found and display accordingly
             if (patient != null) {
-                System.out.println("MRN: " + patient.getMrn());
-                System.out.println(
-                    "Name: " + patient.getFname() + " " + patient.getLname()
-                );
-                System.out.println("DOB: " + patient.getDob());
-                System.out.println("Address: " + patient.getAddress());
-                System.out.println("City: " + patient.getCity());
-                System.out.println("State: " + patient.getState());
-                System.out.println("Zip: " + patient.getZip());
-                System.out.println("Insurance: " + patient.getInsurance());
-                System.out.println("Email: " + patient.getEmail());
+                displayPatient(patient);
             } else {
-                System.out.println(
-                    "[NOT FOUND] Patient with MRN " + id + " not found"
-                );
+                showNotFound("Patient", mrn);
             }
-        } catch (Exception e) {
-            System.out.println(
-                "[ERROR] Error reading patient: " + e.getMessage()
-            );
+        } catch (DatabaseException e) {
+            showError("Error reading patient: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles reading all patients from the database.
+     */
     private void readAllPatients() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Read All Patients");
 
         try {
             System.out.println();
-            List<Patients> patients = patientDAO.readAllPatients();
+            List<Patient> patients = patientDAO.readAll();
             if (!patients.isEmpty()) {
                 int count = 1;
-                for (Patients p : patients) {
+                for (Patient p : patients) {
                     System.out.println("Patient " + count + ":");
-                    System.out.println("MRN: " + p.getMrn());
-                    System.out.println(
-                        "Name: " + p.getFname() + " " + p.getLname()
-                    );
-                    System.out.println("DOB: " + p.getDob());
-                    System.out.println("Address: " + p.getAddress());
-                    System.out.println("City: " + p.getCity());
-                    System.out.println("State: " + p.getState());
-                    System.out.println("Zip: " + p.getZip());
-                    System.out.println("Insurance: " + p.getInsurance());
-                    System.out.println("Email: " + p.getEmail());
+                    displayPatient(p);
                     System.out.println();
                     count++;
                 }
             } else {
-                System.out.println("[EMPTY] No patients found");
+                showEmpty("No patients found");
             }
-        } catch (Exception e) {
-            System.out.println(
-                "[ERROR] Error reading all Patients: " + e.getMessage()
-            );
+        } catch (DatabaseException e) {
+            showError("Error reading all patients: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles updating an existing patient.
+     */
     private void updatePatient() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Update Patient");
 
         int mrn = getIntInput("Enter Patient MRN: ");
-        Patients patient;
+        Patient patient;
         try {
-            patient = patientDAO.readPatient(mrn);
-        } catch (SQLException e) {
-            System.out.println("Error fetching patient: " + e.getMessage());
+            patient = patientDAO.read(mrn);
+        } catch (DatabaseException e) {
+            showError("Error fetching patient: " + e.getMessage());
+            System.out.println();
             return;
         }
 
         if (patient == null) {
-            System.out.println("Patient not found");
+            showNotFound("Patient", mrn);
+            System.out.println();
             return;
         }
 
-        String input;
+        System.out.println();
+        showInfo("Current patient details:");
+        displayPatient(patient);
+        System.out.println();
 
-        input = getStringInput("Update last name (leave empty to skip): ");
-        if (!input.isEmpty()) {
-            patient.setLname(input);
-        }
+        // Begin updating patient fields
+        String input;
 
         input = getStringInput("Update first name (leave empty to skip): ");
         if (!input.isEmpty()) {
             patient.setFname(input);
         }
 
+        // Prompt user to update last name
+        input = getStringInput("Update last name (leave empty to skip): ");
+        if (!input.isEmpty()) {
+            patient.setLname(input);
+        }
+
+        // Prompt user to update date of birth
         input = getStringInput(
             "Update Date of Birth (yyyy-MM-dd, leave empty to skip): "
         );
         if (!input.isEmpty()) {
             try {
                 LocalDate dob = LocalDate.parse(input, DATE_FORMATTER);
+                if (dob.isAfter(LocalDate.now())) {
+                    showError("Date of birth cannot be in the future");
+                    System.out.println();
+                    return;
+                }
                 patient.setDob(dob);
             } catch (Exception e) {
-                System.out.println(
-                    "Invalid date format. Please use yyyy-MM-dd format."
-                );
+                showError("Invalid date format. Please use yyyy-MM-dd format.");
+                System.out.println();
                 return;
             }
         }
 
+        // Prompt user to update address
         input = getStringInput("Update Address (leave empty to skip): ");
         if (!input.isEmpty()) {
             patient.setAddress(input);
         }
 
+        // Prompt user to update state
         input = getStringInput("Update State (leave empty to skip): ");
         if (!input.isEmpty()) {
             patient.setState(input);
         }
 
+        // Prompt user to update city
         input = getStringInput("Update City (leave empty to skip): ");
         if (!input.isEmpty()) {
             patient.setCity(input);
         }
 
-        input = getStringInput("Update ZipCode (leave empty to skip): ");
+        // Prompt user to update zip code
+        input = getStringInput("Update Zip Code (leave empty to skip): ");
         if (!input.isEmpty()) {
             try {
-                patient.setZip(Integer.parseInt(input));
+                int zip = Integer.parseInt(input);
+                if (zip <= 0 || zip > 99999) {
+                    showError("Zip code must be a valid 5-digit number");
+                    System.out.println();
+                    return;
+                }
+                patient.setZip(zip);
             } catch (NumberFormatException e) {
-                System.out.println(
-                    "Invalid zip code. Please enter a valid number."
-                );
+                showError("Invalid zip code. Please enter a valid number.");
+                System.out.println();
                 return;
             }
         }
 
-        input = getStringInput("Update email (leave empty to skip): ");
-        if (!input.isEmpty()) {
-            patient.setEmail(input);
-        }
-
+        // Prompt user to update insurance
         input = getStringInput("Update Insurance (leave empty to skip): ");
         if (!input.isEmpty()) {
             patient.setInsurance(input);
         }
 
+        // Prompt user to update email
+        input = getStringInput("Update Email (leave empty to skip): ");
+        if (!input.isEmpty()) {
+            if (!input.contains("@") || !input.contains(".")) {
+                showError("Invalid email format");
+                System.out.println();
+                return;
+            }
+            patient.setEmail(input);
+        }
+
         try {
             System.out.println();
-            boolean update = patientDAO.updatePatient(patient);
+            // Attempt to update the patient in the database
+            boolean update = patientDAO.update(patient);
             if (update) {
-                System.out.println("[OK] Patient information has been updated");
+                showSuccess("Patient information has been updated");
             } else {
-                System.out.println("[ERROR] Update failed");
+                showError("Update failed");
             }
-        } catch (SQLException e) {
-            System.out.println(
-                "[ERROR] Error updating patient: " + e.getMessage()
-            );
+        } catch (DatabaseException e) {
+            showError("Error updating patient: " + e.getMessage());
         }
         System.out.println();
     }
 
+    /**
+     * Handles deleting a patient.
+     */
     private void deletePatient() {
-        System.out.println("-----");
+        printSeparator();
         System.out.println("Delete Patient");
 
+        // Prompt user for patient MRN
         int mrn = getIntInput("Enter MRN: ");
-        Patients patient;
+        Patient patient;
+        // Fetch patient from database to verify existence
         try {
-            patient = patientDAO.readPatient(mrn);
-        } catch (SQLException e) {
-            System.out.println(
-                "[ERROR] Error fetching patient: " + e.getMessage()
-            );
+            patient = patientDAO.read(mrn);
+        } catch (DatabaseException e) {
+            showError("Error fetching patient: " + e.getMessage());
             System.out.println();
             return;
         }
 
+        // Check if patient exists
         if (patient == null) {
-            System.out.println("[NOT FOUND] Patient not found");
+            showNotFound("Patient", mrn);
             System.out.println();
             return;
         }
 
         System.out.println();
-        System.out.println("[INFO] Patient details:");
-        System.out.println(patient.toString());
-        String confirm = getStringInput(
-            "[WARN] Are you sure you want to delete this patient? (y/n): "
-        );
-        if (confirm.equalsIgnoreCase("y")) {
+        // Display patient details for confirmation
+        showInfo("Patient details:");
+        displayPatient(patient);
+        System.out.println();
+
+        // Ask for user confirmation before deletion
+        if (
+            getConfirmation(
+                "[WARN] Are you sure you want to delete this patient? (y/n): "
+            )
+        ) {
             try {
                 System.out.println();
-                boolean deleted = patientDAO.deletePatient(mrn);
+                // Attempt to delete the patient from the database
+                boolean deleted = patientDAO.delete(mrn);
                 if (deleted) {
-                    System.out.println("[OK] Patient deleted successfully");
+                    showSuccess("Patient deleted successfully");
                 } else {
-                    System.out.println("[ERROR] Failed to delete patient");
+                    showError("Failed to delete patient");
                 }
-            } catch (SQLException e) {
-                System.out.println(
-                    "[ERROR] Error deleting patient: " + e.getMessage()
-                );
+            } catch (DatabaseException e) {
+                showError("Error deleting patient: " + e.getMessage());
             }
         } else {
-            System.out.println("[CANCELLED] Deletion cancelled");
+            // Handle cancellation of deletion
+            showCancelled("Deletion cancelled");
         }
         System.out.println();
+    }
+
+    /**
+     * Displays a patient's information in a formatted way.
+     *
+     * @param patient the patient to display
+     */
+    private void displayPatient(Patient patient) {
+        System.out.println("MRN: " + patient.getMrn());
+        System.out.println(
+            "Name: " + patient.getFname() + " " + patient.getLname()
+        );
+        System.out.println("DOB: " + patient.getDob());
+        System.out.println("Address: " + patient.getAddress());
+        System.out.println("City: " + patient.getCity());
+        System.out.println("State: " + patient.getState());
+        System.out.println("Zip: " + patient.getZip());
+        System.out.println("Insurance: " + patient.getInsurance());
+        System.out.println("Email: " + patient.getEmail());
     }
 }
