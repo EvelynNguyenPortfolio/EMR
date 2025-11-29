@@ -104,6 +104,23 @@ public class PatientHistoryService {
     }
 
     /**
+     * Retrieves all patient history records for a specific patient by their MRN.
+     *
+     * @param patientId the patient's MRN
+     * @return a list of patient history records for the patient
+     * @throws EntityNotFoundException if the patient does not exist
+     * @throws DatabaseException       if a database error occurs
+     */
+    public List<PatientHistory> getPatientHistoriesByPatientId(int patientId)
+        throws EntityNotFoundException, DatabaseException {
+        // Verify the patient exists
+        verifyPatientExists(patientId);
+
+        // Retrieve the patient histories
+        return patientHistoryDAO.readByPatientId(patientId);
+    }
+
+    /**
      * Updates an existing patient history record.
      * <p>
      * This method validates the updated data and verifies that all

@@ -229,6 +229,39 @@ public class PatientHistoryDAO implements BaseDAO<PatientHistory, String> {
     }
 
     /**
+     * Retrieves all patient history records for a specific patient by their MRN.
+     *
+     * @param patientId the patient's MRN
+     * @return a list of patient history records for the patient
+     * @throws DatabaseException if a database error occurs
+     */
+    public List<PatientHistory> readByPatientId(int patientId)
+        throws DatabaseException {
+        String sql = "SELECT * FROM patient_history WHERE patientId = ?";
+        List<PatientHistory> patientHistories = new ArrayList<>();
+
+        try (
+            PreparedStatement stmt = db.getConnection().prepareStatement(sql)
+        ) {
+            stmt.setInt(1, patientId);
+            try (ResultSet resultSet = stmt.executeQuery()) {
+                while (resultSet.next()) {
+                    patientHistories.add(
+                        mapResultSetToPatientHistory(resultSet)
+                    );
+                }
+                return patientHistories;
+            }
+        } catch (SQLException e) {
+            throw new DatabaseException(
+                "Failed to read patient histories by patient ID: " +
+                    e.getMessage(),
+                e
+            );
+        }
+    }
+
+    /**
      * Maps a ResultSet row to a PatientHistory object.
      *
      * @param resultSet the ResultSet positioned at a valid row

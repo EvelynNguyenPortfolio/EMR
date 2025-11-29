@@ -46,18 +46,21 @@ public class PatientHistoryCLI extends CLI {
                     createPatientHistory();
                     break;
                 case 2:
-                    readPatientHistory();
+                    readPatientHistoriesByPatientMRN();
                     break;
                 case 3:
-                    readAllPatientHistories();
+                    readPatientHistory();
                     break;
                 case 4:
-                    updatePatientHistory();
+                    readAllPatientHistories();
                     break;
                 case 5:
-                    deletePatientHistory();
+                    updatePatientHistory();
                     break;
                 case 6:
+                    deletePatientHistory();
+                    break;
+                case 7:
                     running = false;
                     System.out.println("Returning to main menu");
                     break;
@@ -74,11 +77,12 @@ public class PatientHistoryCLI extends CLI {
         System.out.println("Patient History Management");
         System.out.println();
         System.out.println("1. Create Patient History");
-        System.out.println("2. Read Patient History by ID");
-        System.out.println("3. Read All Patient History");
-        System.out.println("4. Update Patient History");
-        System.out.println("5. Delete Patient History");
-        System.out.println("6. Back to Main Menu");
+        System.out.println("2. Read Patient History by Patient MRN");
+        System.out.println("3. Read Patient History by ID");
+        System.out.println("4. Read All Patient History");
+        System.out.println("5. Update Patient History");
+        System.out.println("6. Delete Patient History");
+        System.out.println("7. Back to Main Menu");
     }
 
     /**
@@ -166,6 +170,38 @@ public class PatientHistoryCLI extends CLI {
             } else {
                 showEmpty("No patient histories found");
             }
+        } catch (DatabaseException e) {
+            showError("Database error: " + e.getMessage());
+        }
+        System.out.println();
+    }
+
+    /**
+     * Handles reading patient histories by patient MRN.
+     */
+    private void readPatientHistoriesByPatientMRN() {
+        printSeparator();
+        System.out.println("Read Patient History by Patient MRN");
+
+        int patientId = getIntInput("Enter Patient MRN: ");
+
+        try {
+            System.out.println();
+            List<PatientHistory> histories =
+                patientHistoryService.getPatientHistoriesByPatientId(patientId);
+            if (!histories.isEmpty()) {
+                int count = 1;
+                for (PatientHistory h : histories) {
+                    System.out.println("Patient History " + count + ":");
+                    displayPatientHistory(h);
+                    System.out.println();
+                    count++;
+                }
+            } else {
+                showEmpty("No patient histories found for this patient");
+            }
+        } catch (EntityNotFoundException e) {
+            showNotFound("Patient", patientId);
         } catch (DatabaseException e) {
             showError("Database error: " + e.getMessage());
         }
