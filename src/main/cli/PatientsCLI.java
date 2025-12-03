@@ -162,8 +162,8 @@ public class PatientsCLI extends CLI {
                 int count = 1;
                 for (Patient p : patients) {
                     System.out.println("Patient " + count + ":");
-                    displayPatient(p);
-                    System.out.println();
+                    System.out.println("MRN: " + p.getMrn());
+                    System.out.println("Name: " + p.getFname() + " " + p.getLname() + "\n");
                     count++;
                 }
             } else {
